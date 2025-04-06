@@ -1,0 +1,34 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+#include "HYDamageableActor.generated.h"
+
+class UHYHealthComponent;
+
+UCLASS()
+class HELLYEAH_API AHYDamageableActor : public AActor
+{
+	GENERATED_BODY()
+	
+public:	
+	// Sets default values for this actor's properties
+	AHYDamageableActor();
+
+	UFUNCTION(BlueprintCallable, Category = "HYDamageableActor|Health")
+	UHYHealthComponent* GetHealthComponent() const { return HealthComponent; };
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HYDamageableActor|Health")
+	TObjectPtr<UHYHealthComponent> HealthComponent;
+
+public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+};
