@@ -34,11 +34,12 @@ void UMusicSubsystem::LoadMusicFromDescription(UDAMusicDescription* InMusicDescr
 	if (!IsValid(Clock))
 	{
 		Clock = QuartzSubsystem->CreateNewClock(this, FName("Main"), FQuartzClockSettings());
+		Clock->StartClock(this, Clock);
 	}
 
 	if (!IsValid(SoundActor))
 	{
-		SoundActor = GWorld->SpawnActor<AAmbientSound>();
+		SoundActor = GetWorld()->SpawnActor<AAmbientSound>();
 
 		const UHYMusicData* MusicSettings = GetDefault<UHYMusicData>();
 
@@ -61,7 +62,7 @@ void UMusicSubsystem::LoadMusicFromDescription(UDAMusicDescription* InMusicDescr
 		SoundActor->GetAudioComponent()->SetFloatParameter(MusicTypeToBPMParam[Stem.MusicType], Stem.BPM);
 	}
 
-	SoundActor->GetAudioComponent()->SetFloatParameter(FName("BPM"), MusicDescription->GeneralBPM);
+ 	SoundActor->GetAudioComponent()->SetFloatParameter(FName("BPM"), MusicDescription->GeneralBPM);
 
 	Clock->SetBeatsPerMinute(this, Quantization, FOnQuartzCommandEventBP(), Clock, MusicDescription->GeneralBPM);
 	SoundActor->GetAudioComponent()->PlayQuantized(this, Clock, Quantization, FOnQuartzCommandEventBP());
