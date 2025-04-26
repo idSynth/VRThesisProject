@@ -15,9 +15,8 @@ struct FHYDamageInfo
 	GENERATED_BODY()
 	
 public:
-
 	UPROPERTY(BlueprintReadWrite)
-	float Damage;
+	float Damage = 0.0f;
 
 	UPROPERTY(BlueprintReadWrite)
 	APawn* Instigator;
@@ -29,6 +28,8 @@ public:
 	FHitResult HitResult;
 
 	bool IsValidDamageInfo() const { return Damage != 0.0f; }
+
+	AActor* GetTarget() const { return HitResult.GetActor(); }
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHitBlocked, FHYDamageInfo, BlockedDamageInfo);

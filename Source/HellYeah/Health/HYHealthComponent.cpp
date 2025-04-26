@@ -58,6 +58,12 @@ void UHYHealthComponent::OverrideHealth(const float& NewHealth)
 	{
 		OnHealthChanged.Broadcast(CurrentHealth, OldHealth);
 	}
+
+	if (NewHealth <= 0.0f)
+	{
+		OnDeath.Broadcast(FHYDamageInfo());
+	}
+
 }
 
 float UHYHealthComponent::CalculateDamage(const FHYDamageInfo& InDamageInfo)

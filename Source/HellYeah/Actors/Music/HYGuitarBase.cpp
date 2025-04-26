@@ -214,7 +214,7 @@ void AHYGuitarBase::DealDamage(FName OutputName, const FMetaSoundOutput& MSOutpu
 
 	FVector Start = StrumHitBox->GetComponentLocation();
 	FVector End = CameraLocation + CameraRotation.Vector() * DamageDistance;
-	if (!UKismetSystemLibrary::SphereTraceMultiForObjects(this, Start, End, 100.0f, DamageObjectTypes, false, {}, DebugTraceType, Hits, true))
+	if (!UKismetSystemLibrary::SphereTraceMultiForObjects(this, Start, End, BaseAttackRadius, DamageObjectTypes, false, {}, DebugTraceType, Hits, true))
 	{
 		return;
 	}
@@ -228,6 +228,12 @@ void AHYGuitarBase::DealDamage(FName OutputName, const FMetaSoundOutput& MSOutpu
 	{
 		if (Hit.GetActor())
 		{
+			FHitResult OutHit;
+			if (!UKismetSystemLibrary::LineTraceSingle(this, Start, Hit.GetActor()->GetActorLocation(), LineOfSightChannel, false, {}, DebugTraceType, OutHit, true))
+			{
+				continue;
+			}
+
 			if (UHYHealthComponent* HealthComponent = Hit.GetActor()->FindComponentByClass<UHYHealthComponent>())
 			{
 				DamageInfo.HitResult = Hit;
