@@ -34,4 +34,11 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
+	UFUNCTION(BlueprintCallable)
+	float GetBaseDamage() const { return BaseDamage; }
+
+private:
+	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = true))
+	float BaseDamage = 10.0f;
 };

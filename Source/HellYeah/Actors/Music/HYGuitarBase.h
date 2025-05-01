@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Interfaces/HYModifierProvider.h"
 
 #include "HYGuitarBase.generated.h"
 
@@ -14,19 +15,22 @@ class UNiagaraComponent;
 class USplineComponent;
 class UAudioComponent;
 class UTextRenderComponent;
-class UMotionControllerComponent;
+class UHYMotionControllerComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNoteChanged, float, MIDINote);
 
 
 UCLASS()
-class HELLYEAH_API AHYGuitarBase : public AActor
+class HELLYEAH_API AHYGuitarBase : public AActor, public IHYModifierProvider
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
 	AHYGuitarBase();
+
+	FModifyAttribute ModifyAttribute;
+	virtual FModifyAttribute* GetModifierDelegate() override { return &ModifyAttribute; }
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<USkeletalMeshComponent> Guitar;
@@ -50,10 +54,10 @@ public:
 	TObjectPtr<UAudioComponent> Audio;
 
 	UPROPERTY(BlueprintReadWrite)
-	TObjectPtr<UMotionControllerComponent> FretMotionController;
+	TObjectPtr<UHYMotionControllerComponent> FretMotionController;
 
 	UPROPERTY(BlueprintReadWrite)
-	TObjectPtr<UMotionControllerComponent> StrumMotionController;
+	TObjectPtr<UHYMotionControllerComponent> StrumMotionController;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnNoteChanged OnNoteChanged;
@@ -92,7 +96,10 @@ protected:
 	float CalculateFretboardPosition(const FVector& CurrentSplinePosition);
 
 	UFUNCTION(BlueprintCallable)
-	void DealDamage(FName OutputName, const FMetaSoundOutput& MSOutput);
+	void DealDamageMusicOutput(FName OutputName, const FMetaSoundOutput& MSOutput);	
+	
+	UFUNCTION(BlueprintCallable)
+	void DealDamage();
 
 	UFUNCTION(BlueprintCallable)
 	void StartShooting();
@@ -126,7 +133,13 @@ private:
 	float BaseDamage = 1.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	float DamageRate = 2.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	float BaseAttackRadius = 200.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	float StrumThreshold = 0.3f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	TEnumAsByte<EDrawDebugTrace::Type> DebugTraceType;
@@ -136,6 +149,9 @@ private:
 	{
 		"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
 	};
+
+	// timestamp of the last time we dealt damage
+	float LastDamageTime = -FLT_MAX;
 
 public:	
 	// Called every frame

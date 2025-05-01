@@ -30,6 +30,9 @@ void AHYWaveManager::StartWave()
 	GetWorld()->GetTimerManager().SetTimer(SpawnerTimerHandle, this, &AHYWaveManager::TrySpawnEnemy, SpawnCheckFrequency, TimerParams);
 
 	bIsWaveActive = true;
+
+	TrySpawnEnemy();
+
 	CurrentWave++;
 	OnWaveStarted.Broadcast();
 }

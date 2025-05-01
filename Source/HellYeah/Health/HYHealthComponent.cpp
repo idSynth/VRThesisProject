@@ -5,6 +5,7 @@
 #include "Components/WidgetComponent.h"
 #include "Components/HYCameraFacingWidgetComponent.h"
 #include "Widgets/HYOwnableWidget.h"
+#include "HYGameplayTags.h"
 
 // Sets default values for this component's properties
 UHYHealthComponent::UHYHealthComponent()
@@ -69,6 +70,8 @@ void UHYHealthComponent::OverrideHealth(const float& NewHealth)
 float UHYHealthComponent::CalculateDamage(const FHYDamageInfo& InDamageInfo)
 {
 	float NewDamage = FMath::Abs(InDamageInfo.Damage);
+
+	ModifyAttribute.Broadcast(TAG_Attribute_Damage_Incoming, NewDamage);
 
 	return NewDamage;
 }

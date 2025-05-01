@@ -2,7 +2,7 @@
 
 
 #include "Components/HYGrabComponent.h"
-#include "MotionControllerComponent.h"
+#include "Components/HYMotionControllerComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
@@ -15,7 +15,7 @@ UHYGrabComponent::UHYGrabComponent()
 	// ...
 }
 
-bool UHYGrabComponent::TryGrab(UMotionControllerComponent* MotionController)
+bool UHYGrabComponent::TryGrab(UHYMotionControllerComponent* MotionController)
 {
 	switch (GrabType)
 	{
@@ -133,7 +133,7 @@ EControllerHand UHYGrabComponent::GetHeldByHand() const
 	return MotionControllerRef->MotionSource == FName("LeftGrip") ? EControllerHand::Left : EControllerHand::Right;
 }
 
-bool UHYGrabComponent::AttachParentToMotionController(UMotionControllerComponent* MotionController)
+bool UHYGrabComponent::AttachParentToMotionController(UHYMotionControllerComponent* MotionController)
 {
 	USceneComponent* Parent = GetAttachParent();
 	if (!IsValid(Parent))

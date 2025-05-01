@@ -7,10 +7,10 @@
 #include "HYGrabComponent.generated.h"
 
 class UHapticFeedbackEffect_Base;
-class UMotionControllerComponent;
+class UHYMotionControllerComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGrabbed, UMotionControllerComponent*, MotionController);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDropped, UMotionControllerComponent*, LastMotionController);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGrabbed, UHYMotionControllerComponent*, MotionController);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDropped, UHYMotionControllerComponent*, LastMotionController);
 
 UENUM(Blueprintable)
 enum class EGrabType : uint8
@@ -31,7 +31,7 @@ public:
 	UHYGrabComponent();
 	
 	UFUNCTION(BlueprintCallable)
-	bool TryGrab(UMotionControllerComponent* MotionController);
+	bool TryGrab(UHYMotionControllerComponent* MotionController);
 
 	UFUNCTION(BlueprintCallable)
 	bool TryRelease();
@@ -46,7 +46,7 @@ public:
 	EControllerHand GetHeldByHand() const;
 	
 	UFUNCTION(BlueprintCallable)
-	bool AttachParentToMotionController(UMotionControllerComponent* MotionController);
+	bool AttachParentToMotionController(UHYMotionControllerComponent* MotionController);
 
 	// ========================================================
 
@@ -76,7 +76,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UMotionControllerComponent> MotionControllerRef;
+	TObjectPtr<UHYMotionControllerComponent> MotionControllerRef;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UHYGrabComponent> PrimaryGrabComponent;

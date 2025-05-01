@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Interfaces/HYModifierProvider.h"
 #include "HYHealthComponent.generated.h"
 
 class UHYCameraFacingWidgetComponent;
@@ -15,6 +16,10 @@ struct FHYDamageInfo
 	GENERATED_BODY()
 	
 public:
+	FHYDamageInfo()
+	{
+	}
+
 	UPROPERTY(BlueprintReadWrite)
 	float Damage = 0.0f;
 
@@ -39,13 +44,16 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeath, FHYDamageInfo, LethalDamag
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthBarSetup, UWidgetComponent*, HealthBarComponent);
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class HELLYEAH_API UHYHealthComponent : public UActorComponent
+UCLASS( BlueprintType, Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class HELLYEAH_API UHYHealthComponent : public UActorComponent, public IHYModifierProvider
 {
 	GENERATED_BODY()
 
 public:	
 	UHYHealthComponent();
+
+	FModifyAttribute ModifyAttribute;
+	virtual FModifyAttribute* GetModifierDelegate() override { return &ModifyAttribute; }
 
 	// Tries damaging an actor, returns the amount of damage dealt
 	UFUNCTION(BlueprintCallable)

@@ -6,6 +6,8 @@
 #include "Characters/HYCharacter.h"
 #include "HYPlayerBase.generated.h"
 
+class AHYGuitarBase;
+
 /**
  * 
  */
@@ -14,4 +16,7 @@ class HELLYEAH_API AHYPlayerBase : public AHYCharacter
 {
 	GENERATED_BODY()
 	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<AHYGuitarBase> Guitar;
 };

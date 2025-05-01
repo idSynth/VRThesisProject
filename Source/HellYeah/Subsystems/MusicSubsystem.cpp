@@ -12,11 +12,15 @@ void UMusicSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Collection.InitializeDependency<UQuartzSubsystem>();
 
 	Super::Initialize(Collection);
+
+	QuartzCommandEvent.BindDynamic(this, &UMusicSubsystem::OnMusicStarted);
 }
 
 void UMusicSubsystem::Deinitialize()
 {
 	Super::Deinitialize();
+
+	QuartzCommandEvent.Unbind();
 }
 
 void UMusicSubsystem::LoadMusicFromDescription(UDAMusicDescription* InMusicDescription)
@@ -65,8 +69,12 @@ void UMusicSubsystem::LoadMusicFromDescription(UDAMusicDescription* InMusicDescr
  	SoundActor->GetAudioComponent()->SetFloatParameter(FName("BPM"), MusicDescription->GeneralBPM);
 
 	Clock->SetBeatsPerMinute(this, Quantization, FOnQuartzCommandEventBP(), Clock, MusicDescription->GeneralBPM);
-	SoundActor->GetAudioComponent()->PlayQuantized(this, Clock, Quantization, FOnQuartzCommandEventBP());
+	SoundActor->GetAudioComponent()->PlayQuantized(this, Clock, Quantization, QuartzCommandEvent);
 	
 	OnMusicSettingsChanged.Broadcast(InMusicDescription);
 }
- 
+
+void UMusicSubsystem::OnMusicStarted(EQuartzCommandDelegateSubType EventType, FName Name)
+{
+	OnMusicStartedDelegate.Broadcast(EventType, Name);
+}

@@ -5,7 +5,10 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Core/HYGameState.h"
+#include "Core/HYPlayerState.h"
 #include "HYFunctionLibrary.generated.h"
+
+class UMotionControllerComponent;
 
 /**
  * 
@@ -18,4 +21,7 @@ class HELLYEAH_API UHYFunctionLibrary : public UBlueprintFunctionLibrary
 public:
 	UFUNCTION(BlueprintCallable)
 	static AHYGameState* GetGameStateTyped() { return GWorld->GetGameStateChecked<AHYGameState>(); }
+
+	UFUNCTION(BlueprintCallable)
+	static AHYPlayerState* GetPlayerStateTyped() { return GWorld->GetFirstPlayerController()->GetPlayerState<AHYPlayerState>(); }
 };

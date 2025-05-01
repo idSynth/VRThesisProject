@@ -4,10 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameplayTagContainer.h"
 #include "HYUpgradeSelector.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpgradeSelected);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUpgradeSelected, FGameplayTag, SelectedTag);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUpgradeSelectionStarted);
+
+class AHYUpgradeItem;
+class UHYMotionControllerComponent;
 
 UCLASS()
 class HELLYEAH_API AHYUpgradeSelector : public AActor
@@ -22,7 +26,7 @@ public:
 	void StartUpgradeSelection();
 
 	UFUNCTION(BlueprintCallable)
-	void FinishUpgradeSelection();
+	void FinishUpgradeSelection(AHYUpgradeItem* UpgradeItem);
 
 	UPROPERTY(BlueprintAssignable)
 	FOnUpgradeSelectionStarted OnUpgradeSelectionStarted;
@@ -33,6 +37,18 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 ItemsAmount = 3;
+
+	UPROPERTY(BlueprintReadOnly)
+	TArray<TObjectPtr<AHYUpgradeItem>> UpgradeItems;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AHYUpgradeItem> ItemClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float ItemSpacing = 200.f;
 
 public:	
 	// Called every frame

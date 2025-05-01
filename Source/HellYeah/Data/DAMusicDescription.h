@@ -74,20 +74,24 @@ struct FStemDescription
 	GENERATED_BODY()
 
 public:
+	FStemDescription()
+	{
+	}
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Music Data")
-	EMusicType MusicType;
+	EMusicType MusicType = EMusicType::Chords;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Music Data")
 	TSoftObjectPtr<USoundWave> SoundAsset;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Music Data")
-	int32 BPM;
+	int32 BPM = 170;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Music Data", meta = (EditCondition = "MusicType != EMusicType::Drums", EditConditionHides))
-	EMusicalNoteName RootNote;
+	EMusicalNoteName RootNote = EMusicalNoteName::C;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Music Data", meta = (EditCondition = "MusicType != EMusicType::Drums", EditConditionHides))
-	EMusicScale Scale;
+	EMusicScale Scale = EMusicScale::Major;
 };
 
 

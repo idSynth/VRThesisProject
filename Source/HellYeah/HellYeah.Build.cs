@@ -13,7 +13,8 @@ public class HellYeah : ModuleRules
             "HellYeah"
 		});
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG", "AudioMixer", "DeveloperSettings", "Niagara", "HeadMountedDisplay", "MetasoundEngine", "MetasoundFrontend" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG", "GameplayTags", "AudioMixer", "DeveloperSettings", "Niagara", 
+			"HeadMountedDisplay", "MetasoundEngine", "MetasoundFrontend" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

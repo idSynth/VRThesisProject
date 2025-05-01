@@ -43,7 +43,14 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Music")
 	FOnMusicSettingsChanged OnMusicSettingsChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Music")
+	FOnQuartzCommandEvent OnMusicStartedDelegate;
+
 private:
+	UFUNCTION()
+	void OnMusicStarted(EQuartzCommandDelegateSubType EventType, FName Name);
+
 	UPROPERTY()
 	TObjectPtr<UDAMusicDescription> MusicDescription;
 
@@ -66,6 +73,9 @@ private:
 	
 	UPROPERTY()
 	UQuartzClockHandle* Clock;
+
+	UPROPERTY()
+	FOnQuartzCommandEventBP QuartzCommandEvent;
 
 	UPROPERTY()
 	TObjectPtr<AAmbientSound> SoundActor;

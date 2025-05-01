@@ -8,7 +8,7 @@
 #include "NiagaraComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/TextRenderComponent.h"
-#include "MotionControllerComponent.h"
+#include "Components/HYMotionControllerComponent.h"
 #include "Health/HYHealthComponent.h"
 
 #include "Kismet/KismetMathLibrary.h"
@@ -17,6 +17,9 @@
 #include "MetasoundOutput.h"
 #include "MetasoundPrimitives.h"
 #include "MetasoundTime.h"
+
+#include "HYGameplayTags.h"
+#include "HYFunctionLibrary.h"
 
 // Sets default values
 AHYGuitarBase::AHYGuitarBase()
@@ -147,10 +150,24 @@ void AHYGuitarBase::UpdateStrumming()
 
 	bool bIsHandInsideStrummingBox = !(Delta.X > 0.0f || Delta.Y > 0.0f || Delta.Z > 0.0f);
 
-	float StrummingVelocity = StrumMotionController->GetComponentVelocity().Length();
+	float StrummingVelocity = StrumMotionController->GetLinearVelocityPublic().Length();
 	float NormalizedStrummingVelocity = UKismetMathLibrary::NormalizeToRange(StrummingVelocity, 0.0f, 150.0f);
 
-	Audio->SetFloatParameter(FName("NormalizedStrummingVelocity"), FMath::Clamp(NormalizedStrummingVelocity, 0.5f, 1.0f));
+	Audio->SetFloatParameter(FName("NormalizedStrummingVelocity"), FMath::Clamp(NormalizedStrummingVelocity, 0.0f, 1.0f));
+
+	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10.0f, FColor::White, *FString::SanitizeFloat(StrummingVelocity));
+
+	// at the top of the function
+	const float Now = GetWorld()->GetTimeSeconds();
+	const float MinInterval = 1.0f / DamageRate;
+
+	if (NormalizedStrummingVelocity > StrumThreshold && Now - LastDamageTime >= MinInterval)
+	{
+		Audio->SetTriggerParameter(FName("StrummingStart"));
+
+		DealDamage();
+		LastDamageTime = Now;
+	}
 }
 
 void AHYGuitarBase::UpdateNoteName(FName OutputName, const FMetaSoundOutput& MSOutput)
@@ -188,7 +205,7 @@ float AHYGuitarBase::CalculateFretboardPosition(const FVector& CurrentSplinePosi
 	return FMath::Clamp(DistanceAP/DistanceAB, 0.0f, 1.0f);
 }
 
-void AHYGuitarBase::DealDamage(FName OutputName, const FMetaSoundOutput& MSOutput)
+void AHYGuitarBase::DealDamageMusicOutput(FName OutputName, const FMetaSoundOutput& MSOutput)
 {
 	if (!bIsShooting)
 	{
@@ -200,6 +217,11 @@ void AHYGuitarBase::DealDamage(FName OutputName, const FMetaSoundOutput& MSOutpu
 		return;
 	}
 	
+	DealDamage();
+}
+
+void AHYGuitarBase::DealDamage()
+{
 	if (!GetInstigatorController())
 	{
 		UE_LOG(LogTemp, Error, TEXT("No Instigator Controller found for %s!"), *GetNameSafe(this));
@@ -213,7 +235,11 @@ void AHYGuitarBase::DealDamage(FName OutputName, const FMetaSoundOutput& MSOutpu
 	FRotator CameraRotation = CameraManager->GetCameraRotation();
 
 	FVector Start = StrumHitBox->GetComponentLocation();
-	FVector End = CameraLocation + CameraRotation.Vector() * DamageDistance;
+
+	float ModifiedDamageDistance = DamageDistance;
+	ModifyAttribute.Broadcast(TAG_Attribute_Range, ModifiedDamageDistance);
+
+	FVector End = CameraLocation + CameraRotation.Vector() * ModifiedDamageDistance;
 	if (!UKismetSystemLibrary::SphereTraceMultiForObjects(this, Start, End, BaseAttackRadius, DamageObjectTypes, false, {}, DebugTraceType, Hits, true))
 	{
 		return;
@@ -229,7 +255,7 @@ void AHYGuitarBase::DealDamage(FName OutputName, const FMetaSoundOutput& MSOutpu
 		if (Hit.GetActor())
 		{
 			FHitResult OutHit;
-			if (!UKismetSystemLibrary::LineTraceSingle(this, Start, Hit.GetActor()->GetActorLocation(), LineOfSightChannel, false, {}, DebugTraceType, OutHit, true))
+			if (UKismetSystemLibrary::LineTraceSingle(this, Start, Hit.GetActor()->GetActorLocation(), LineOfSightChannel, false, {}, DebugTraceType, OutHit, true))
 			{
 				continue;
 			}
@@ -237,6 +263,9 @@ void AHYGuitarBase::DealDamage(FName OutputName, const FMetaSoundOutput& MSOutpu
 			if (UHYHealthComponent* HealthComponent = Hit.GetActor()->FindComponentByClass<UHYHealthComponent>())
 			{
 				DamageInfo.HitResult = Hit;
+
+				ModifyAttribute.Broadcast(TAG_Attribute_Damage_Outcoming, DamageInfo.Damage);
+
 				HealthComponent->TryDamage(DamageInfo);
 			}
 		}

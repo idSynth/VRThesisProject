@@ -53,7 +53,7 @@ protected:
 	void HandleWaveEnd();
 
 	UFUNCTION()
-	void HandleUpgradeSelected();
+	void HandleUpgradeSelected(FGameplayTag Tag);
 
 	UFUNCTION()
 	void EndPreparePhase();

@@ -58,7 +58,7 @@ void AHYGameState::HandleWaveEnd()
 	SetGamePhase(EGamePhase::Upgrade);
 }
 
-void AHYGameState::HandleUpgradeSelected()
+void AHYGameState::HandleUpgradeSelected(FGameplayTag Tag)
 {
 	SetGamePhase(EGamePhase::Prepare);
 }
