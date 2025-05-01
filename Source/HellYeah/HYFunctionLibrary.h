@@ -6,6 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Core/HYGameState.h"
 #include "Core/HYPlayerState.h"
+#include "GameplayTagContainer.h"
 #include "HYFunctionLibrary.generated.h"
 
 class UMotionControllerComponent;
@@ -24,4 +25,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static AHYPlayerState* GetPlayerStateTyped() { return GWorld->GetFirstPlayerController()->GetPlayerState<AHYPlayerState>(); }
+
+	UFUNCTION(BlueprintCallable)
+	static FText GetFriendlyAttributeName(const FGameplayTag& Tag);
 };

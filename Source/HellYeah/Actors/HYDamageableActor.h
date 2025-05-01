@@ -4,9 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Health/HYHealthComponent.h"
 #include "HYDamageableActor.generated.h"
-
-class UHYHealthComponent;
 
 UCLASS()
 class HELLYEAH_API AHYDamageableActor : public AActor
