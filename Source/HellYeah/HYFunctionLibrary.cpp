@@ -2,6 +2,7 @@
 
 
 #include "HYFunctionLibrary.h"
+#include "GameplayTagsManager.h"
 #include "Algo/Reverse.h"
 
 FText UHYFunctionLibrary::GetFriendlyAttributeName(const FGameplayTag& Tag)
@@ -21,4 +22,50 @@ FText UHYFunctionLibrary::GetFriendlyAttributeName(const FGameplayTag& Tag)
 	Algo::Reverse(Parts);
 
 	return FText::FromString(FString::Join(Parts, TEXT(" ")));
+}
+
+FGameplayTagContainer UHYFunctionLibrary::FilterContainer(const FGameplayTagContainer& A, const FGameplayTagContainer& B)
+{
+	TArray<FGameplayTag> GameplayTags;
+	A.GetGameplayTagArray(GameplayTags);
+
+	FGameplayTagContainer ResultContainer;
+
+	for (const FGameplayTag& Tag : GameplayTags)
+	{
+		if (!Tag.MatchesAny(B))
+		{
+			ResultContainer.AddTagFast(Tag);
+		}
+	}
+
+	return ResultContainer;
+}
+
+FGameplayTagContainer UHYFunctionLibrary::GetGameplayTagChildren(FGameplayTag Tag)
+{
+	const UGameplayTagsManager& Manager = UGameplayTagsManager::Get();
+	return Manager.RequestGameplayTagChildren(Tag);
+}
+
+FGameplayTagContainer UHYFunctionLibrary::GetGameplayTagParents(FGameplayTag Tag)
+{
+	const UGameplayTagsManager& Manager = UGameplayTagsManager::Get();
+	return Manager.RequestGameplayTagParents(Tag);
+}
+
+FGameplayTagContainer UHYFunctionLibrary::GetGameplayTagLastChildrenOnly(FGameplayTag Tag)
+{
+	FGameplayTagContainer OutTags;
+	TArray<FGameplayTag> AllChildrenArray = GetGameplayTagChildren(Tag).GetGameplayTagArray();
+
+	for (const FGameplayTag& Child : AllChildrenArray)
+	{
+		if (GetGameplayTagChildren(Child).IsEmpty())
+		{
+			OutTags.AddTag(Child);
+		}
+	}
+
+	return OutTags;
 }

@@ -7,7 +7,7 @@
 #include "HYWaveManager.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWaveStarted);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWaveEnded);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWaveEnded, bool, bWasSuccessful);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemySpawned, AHYEnemyBase*, SpawnedEnemy);
 
 class AHYEnemyBase;
@@ -34,8 +34,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StartWave();
 
-	UFUNCTION(BlueprintCallable)
+	// Called by the timer (defaults to success)
+	UFUNCTION()
 	void EndWave();
+
+	// Called manually to control wave outcome (true = success, false = failure)
+	UFUNCTION(BlueprintCallable)
+	void EndWaveWithResult(bool bWasSuccessful);
+
+	UFUNCTION(BlueprintCallable)
+	void ResetWaves();
 
 	UFUNCTION(BlueprintCallable)
 	void TrySpawnEnemy();

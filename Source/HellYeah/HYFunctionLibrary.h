@@ -7,6 +7,9 @@
 #include "Core/HYGameState.h"
 #include "Core/HYPlayerState.h"
 #include "GameplayTagContainer.h"
+#include "Actors/Gameplay/HYWaveManager.h"
+#include "Actors/Gameplay/HYUpgradeSelector.h"
+#include "Kismet/GameplayStatics.h"
 #include "HYFunctionLibrary.generated.h"
 
 class UMotionControllerComponent;
@@ -25,6 +28,25 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static AHYPlayerState* GetPlayerStateTyped() { return GWorld->GetFirstPlayerController()->GetPlayerState<AHYPlayerState>(); }
+
+	UFUNCTION(BlueprintCallable)
+	static AHYWaveManager* GetWaveManager() { return Cast<AHYWaveManager>(UGameplayStatics::GetActorOfClass(GWorld, AHYWaveManager::StaticClass())); }
+
+	UFUNCTION(BlueprintCallable)
+	static AHYUpgradeSelector* GetUpgradeSelector() { return Cast<AHYUpgradeSelector>(UGameplayStatics::GetActorOfClass(GWorld, AHYUpgradeSelector::StaticClass())); }
+
+	// Returns container that excludes B from A
+	UFUNCTION(BlueprintCallable)
+	static FGameplayTagContainer FilterContainer(const FGameplayTagContainer& A, const FGameplayTagContainer& B);
+
+	UFUNCTION(BlueprintCallable)
+	static FGameplayTagContainer GetGameplayTagChildren(FGameplayTag Tag);
+	
+	UFUNCTION(BlueprintCallable)
+	static FGameplayTagContainer GetGameplayTagParents(FGameplayTag Tag);
+
+	UFUNCTION(BlueprintCallable)
+	static FGameplayTagContainer GetGameplayTagLastChildrenOnly(FGameplayTag Tag);
 
 	UFUNCTION(BlueprintCallable)
 	static FText GetFriendlyAttributeName(const FGameplayTag& Tag);

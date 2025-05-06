@@ -11,7 +11,9 @@ enum class EGamePhase : uint8
 {
 	Invasion,
 	Upgrade,
-	Prepare
+	Prepare,
+	Failed,
+	PendingStart
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGamePhaseChanged, EGamePhase, NewGamePhase);
@@ -32,6 +34,9 @@ public:
 	EGamePhase GetGamePhase() const { return CurrentGamePhase; }
 
 	UFUNCTION(BlueprintCallable)
+	EGamePhase GetPreviousGamePhase() const { return PreviousGamePhase; }
+
+	UFUNCTION(BlueprintCallable)
 	void SetGamePhase(EGamePhase NewGamePhase);
 
 	UFUNCTION(BlueprintCallable)
@@ -50,13 +55,16 @@ protected:
 	virtual void BeginPlay() override;
 	
 	UFUNCTION()
-	void HandleWaveEnd();
+	void HandleWaveEnd(bool bWasSuccessful);
 
 	UFUNCTION()
 	void HandleUpgradeSelected(FGameplayTag Tag);
 
 	UFUNCTION()
 	void EndPreparePhase();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	EGamePhase PreviousGamePhase;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EGamePhase CurrentGamePhase;

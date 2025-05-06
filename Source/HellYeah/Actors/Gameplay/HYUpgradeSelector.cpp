@@ -7,6 +7,7 @@
 #include "Actors/Gameplay/HYUpgradeItem.h"
 #include "Components/HYGrabComponent.h"
 #include "Components/HYMotionControllerComponent.h"
+#include "HYFunctionLibrary.h"
 
 // Sets default values
 AHYUpgradeSelector::AHYUpgradeSelector()
@@ -19,18 +20,20 @@ AHYUpgradeSelector::AHYUpgradeSelector()
 void AHYUpgradeSelector::StartUpgradeSelection()
 {
 	const UGameplayTagsManager& Manager = UGameplayTagsManager::Get();
-	FGameplayTagContainer UpgradeContainer = Manager.RequestGameplayTagChildren(TAG_Upgrade.GetTag());
-	
+	FGameplayTagContainer UpgradeContainer = UHYFunctionLibrary::GetGameplayTagLastChildrenOnly(TAG_Upgrade.GetTag());
+	FGameplayTagContainer FilteredContainer = UHYFunctionLibrary::FilterContainer(UpgradeContainer, ExcludeTags);
+
 	TSet<FGameplayTag> RandomTags;
 
 	while (RandomTags.Num() != ItemsAmount)
 	{
-		RandomTags.Add(UpgradeContainer.GetByIndex(FMath::RandRange(0, UpgradeContainer.Num() - 1)));
+		RandomTags.Add(FilteredContainer.GetByIndex(FMath::RandRange(0, FilteredContainer.Num() - 1)));
 	}
 
 	// Row layout settings
 	const FVector Origin = GetActorLocation();
-
+	const FVector LookAtPoint = GetActorLocation() + (GetActorForwardVector() * CurveOffset);
+	
 	const int32 TotalItems = RandomTags.Num();
 	float StartX = -((TotalItems - 1) * 0.5f) * ItemSpacing;
 
@@ -41,7 +44,12 @@ void AHYUpgradeSelector::StartUpgradeSelection()
 	for (const FGameplayTag& Tag : RandomTags)
 	{
 		const FVector SpawnLocation = Origin + GetActorRightVector() * (StartX + Index * ItemSpacing);
-		if (AHYUpgradeItem* Item = GetWorld()->SpawnActor<AHYUpgradeItem>(ItemClass, SpawnLocation, FRotator::ZeroRotator, SpawnParams))
+		
+		// Make item face the curved LookAtPoint
+		const FVector DirectionToLookAt = (LookAtPoint - SpawnLocation).GetSafeNormal();
+		const FRotator SpawnRotation = DirectionToLookAt.Rotation();
+
+		if (AHYUpgradeItem* Item = GetWorld()->SpawnActor<AHYUpgradeItem>(ItemClass, SpawnLocation, SpawnRotation, SpawnParams))
 		{
 			Item->SetUpgradeTag(Tag);
 			Item->OnUpgradeItemGrabbed.AddDynamic(this, &AHYUpgradeSelector::FinishUpgradeSelection);

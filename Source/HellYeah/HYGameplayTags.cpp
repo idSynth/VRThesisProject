@@ -4,6 +4,9 @@
 #include "HYGameplayTags.h"
 
 UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Upgrade, "Upgrade", "The base tag for all upgrades");
+UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Upgrade_Stage, "Upgrade.Stage", "The base tag for all Stage upgrades");
+UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Upgrade_Character, "Upgrade.Character", "The base tag for all Character upgrades");
+UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Upgrade_Guitar, "Upgrade.Guitar", "The base tag for all Guitar upgrades");
 
 UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Attribute, "Attribute", "The base tag for all attributes");
 UE_DEFINE_GAMEPLAY_TAG_COMMENT(TAG_Attribute_Damage_Incoming, "Attribute.Damage.Incoming", "Incoming Damage");

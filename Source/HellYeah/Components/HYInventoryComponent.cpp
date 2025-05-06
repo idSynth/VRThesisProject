@@ -20,19 +20,11 @@ void UHYInventoryComponent::AddNumStacks(const FGameplayTag& UpgradeTag, int32 N
 {
 	const int32* CurrentStacksPtr = Upgrades.Find(UpgradeTag);
 	int32 PreviousStacks = CurrentStacksPtr ? *CurrentStacksPtr : 0;
-	int32 NewStacks = 0;
 
 	for (int32 i = 0; i <= NumStacks; i++)
 	{
-		if (!AddStack(UpgradeTag))
-		{
-			continue;
-		}
-
-		NewStacks++;
+		AddStack(UpgradeTag);
 	}
-
-	OnStackChanged.Broadcast(UpgradeTag, PreviousStacks, NewStacks);
 }
 
 void UHYInventoryComponent::RemoveAllStacks(const FGameplayTag& UpgradeTag)

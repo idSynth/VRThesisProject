@@ -41,6 +41,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 ItemsAmount = 3;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 CurveOffset = -40;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTagContainer ExcludeTags;
+
 	UPROPERTY(BlueprintReadOnly)
 	TArray<TObjectPtr<AHYUpgradeItem>> UpgradeItems;
 

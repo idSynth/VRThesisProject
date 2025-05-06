@@ -39,6 +39,11 @@ void AHYWaveManager::StartWave()
 
 void AHYWaveManager::EndWave()
 {
+	EndWaveWithResult(true);
+}
+
+void AHYWaveManager::EndWaveWithResult(bool bWasSuccessful)
+{
 	if (!bIsWaveActive)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Tried to end inactive wave!"));
@@ -60,9 +65,14 @@ void AHYWaveManager::EndWave()
 	}
 
 	SpawnedEnemies.Empty(EnemyLimit);
-
+	
 	bIsWaveActive = false;
-	OnWaveEnded.Broadcast();
+	OnWaveEnded.Broadcast(bWasSuccessful);
+}
+
+void AHYWaveManager::ResetWaves()
+{
+	CurrentWave = 0;
 }
 
 void AHYWaveManager::TrySpawnEnemy()

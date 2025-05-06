@@ -4,7 +4,7 @@
 #include "Core/HYGameState.h"
 #include "Actors/Gameplay/HYWaveManager.h"
 #include "Actors/Gameplay/HYUpgradeSelector.h"
-#include "Kismet/GameplayStatics.h"
+#include "HYFunctionLibrary.h"
 
 void AHYGameState::SetGamePhase(EGamePhase NewGamePhase)
 {
@@ -12,7 +12,8 @@ void AHYGameState::SetGamePhase(EGamePhase NewGamePhase)
 	{
 		return;
 	}
-
+	
+	PreviousGamePhase = CurrentGamePhase;
 	CurrentGamePhase = NewGamePhase;
 
 	switch (CurrentGamePhase)
@@ -35,6 +36,14 @@ void AHYGameState::SetGamePhase(EGamePhase NewGamePhase)
 			GetWorld()->GetTimerManager().SetTimer(PrepareTimerHandle, this, &AHYGameState::EndPreparePhase, PrepareTime, TimerParams);
 			break;
 		}
+		case EGamePhase::Failed:
+		{
+			break;
+		}
+		case EGamePhase::PendingStart:
+		{
+			break;
+		}
 	}
 
 	OnGamePhaseChanged.Broadcast(CurrentGamePhase);
@@ -44,18 +53,18 @@ void AHYGameState::BeginPlay()
 {
 	Super::BeginPlay();
 
-	WaveManager = Cast<AHYWaveManager>(UGameplayStatics::GetActorOfClass(this, AHYWaveManager::StaticClass()));
+	WaveManager = UHYFunctionLibrary::GetWaveManager();
 
 	WaveManager->OnWaveEnded.AddDynamic(this, &AHYGameState::HandleWaveEnd);
 
-	UpgradeSelector = Cast<AHYUpgradeSelector>(UGameplayStatics::GetActorOfClass(this, AHYUpgradeSelector::StaticClass()));
+	UpgradeSelector = UHYFunctionLibrary::GetUpgradeSelector();
 
 	UpgradeSelector->OnUpgradeSelected.AddDynamic(this, &AHYGameState::HandleUpgradeSelected);
 }
 
-void AHYGameState::HandleWaveEnd()
+void AHYGameState::HandleWaveEnd(bool bWasSuccessful)
 {
-	SetGamePhase(EGamePhase::Upgrade);
+	SetGamePhase(bWasSuccessful ? EGamePhase::Upgrade : EGamePhase::Failed);
 }
 
 void AHYGameState::HandleUpgradeSelected(FGameplayTag Tag)
@@ -65,6 +74,11 @@ void AHYGameState::HandleUpgradeSelected(FGameplayTag Tag)
 
 void AHYGameState::EndPreparePhase()
 {
+	if (PreviousGamePhase == EGamePhase::Failed || PreviousGamePhase == EGamePhase::PendingStart)
+	{
+		WaveManager->ResetWaves();
+	}
+
 	SetGamePhase(EGamePhase::Invasion);
 }
 
