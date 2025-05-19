@@ -22,6 +22,15 @@ enum class EModifierType : uint8
 	Decrease
 };
 
+UCLASS(Config = Game, defaultconfig, meta = (DisplayName = "HY Project Settings"))
+class HELLYEAH_API UHYUpgradesData : public UDeveloperSettings
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "General", AdvancedDisplay)
+	TSoftObjectPtr<UDataTable> UpgradesDT;
+};
+
 class UHYUpgrade;
 
 USTRUCT(BlueprintType)

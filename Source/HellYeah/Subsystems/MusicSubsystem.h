@@ -13,7 +13,7 @@ class UQuartzClockHandle;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMusicSettingsChanged, UDAMusicDescription*, NewMusicDescription);
 
-UCLASS(Config = Game, defaultconfig, meta = (DisplayName = "HY Project settings"))
+UCLASS(Config = Game, defaultconfig, meta = (DisplayName = "HY Project Settings"))
 class HELLYEAH_API UHYMusicData : public UDeveloperSettings
 {
 	GENERATED_BODY()
