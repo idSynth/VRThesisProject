@@ -26,5 +26,6 @@ class HELLYEAH_API IHYModifierProvider
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	// Called by systems to get access to the modifier delegate
-	virtual FModifyAttribute* GetModifierDelegate() = 0;
+	// Always returns zero or more delegates to bind to
+	virtual TArray<FModifyAttribute*> GetModifierDelegates() = 0;
 };

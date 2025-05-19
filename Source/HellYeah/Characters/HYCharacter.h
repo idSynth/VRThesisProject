@@ -4,12 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/HYModifierProvider.h"
+#include "Health/HYHealthComponent.h"
 #include "HYCharacter.generated.h"
 
 class UHYHealthComponent;
 
 UCLASS(Abstract)
-class HELLYEAH_API AHYCharacter : public ACharacter
+class HELLYEAH_API AHYCharacter : public ACharacter, public IHYModifierProvider
 {
 	GENERATED_BODY()
 
@@ -17,8 +19,14 @@ public:
 	// Sets default values for this character's properties
 	AHYCharacter();
 
+	FModifyAttribute ModifyAttribute;
+	virtual TArray<FModifyAttribute*> GetModifierDelegates() override;
+
 	UFUNCTION(BlueprintCallable, Category = "HYCharacter|Health")
 	UHYHealthComponent* GetHealthComponent() const { return HealthComponent; };
+
+	UFUNCTION(BlueprintCallable)
+	bool DealDamage(const FHitResult& Hit);
 
 protected:
 	// Called when the game starts or when spawned

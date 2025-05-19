@@ -6,6 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "GameplayTagContainer.h"
 #include "HYStructs.h"
+#include "Interfaces/HYModifierProvider.h"
 #include "HYUpgrade.generated.h"
 
 class UHYInventoryComponent;
@@ -109,5 +110,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	FTimerHandle Cooldown;
 
-	FDelegateHandle ModifierDelegateHandle;
+	TArray<FDelegateHandle> ModifierDelegateHandles;
+	TArray<FModifyAttribute*> BoundDelegates;
 };

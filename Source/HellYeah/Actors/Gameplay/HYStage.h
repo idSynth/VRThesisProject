@@ -17,5 +17,5 @@ class HELLYEAH_API AHYStage : public AHYDamageableActor, public IHYModifierProvi
 	
 public:
 	FModifyAttribute ModifyAttribute;
-	virtual FModifyAttribute* GetModifierDelegate() override { return HealthComponent->GetModifierDelegate(); }
+	virtual TArray<FModifyAttribute*> GetModifierDelegates() override { return HealthComponent->GetModifierDelegates(); }
 };

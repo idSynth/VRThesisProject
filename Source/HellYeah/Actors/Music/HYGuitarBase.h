@@ -30,7 +30,7 @@ public:
 	AHYGuitarBase();
 
 	FModifyAttribute ModifyAttribute;
-	virtual FModifyAttribute* GetModifierDelegate() override { return &ModifyAttribute; }
+	virtual TArray<FModifyAttribute*> GetModifierDelegates() override { return { &ModifyAttribute }; }
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<USkeletalMeshComponent> Guitar;

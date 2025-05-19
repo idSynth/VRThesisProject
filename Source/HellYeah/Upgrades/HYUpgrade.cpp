@@ -44,9 +44,19 @@ bool UHYUpgrade::BindModifierDelegate()
 	{
 		if (IHYModifierProvider* Provider = Cast<IHYModifierProvider>(Actor))
 		{
-			FModifyAttribute* Delegate = Provider->GetModifierDelegate();
-			ModifierDelegateHandle = Delegate->AddUObject(this, &UHYUpgrade::ModifyAttribute);
-			return true;
+			TArray<FModifyAttribute*> Delegates = Provider->GetModifierDelegates();
+
+			for (FModifyAttribute* Delegate : Delegates)
+			{
+				if (Delegate)
+				{
+					FDelegateHandle Handle = Delegate->AddUObject(this, &UHYUpgrade::ModifyAttribute);
+					ModifierDelegateHandles.Add(Handle);
+					BoundDelegates.Add(Delegate); // Save for unbind
+				}
+			}
+
+			return Delegates.Num() > 0;
 		}
 	}
 
@@ -55,17 +65,17 @@ bool UHYUpgrade::BindModifierDelegate()
 
 bool UHYUpgrade::UnbindModifierDelegate()
 {
-	if (AActor* Actor = GetListenActor())
+	check(ModifierDelegateHandles.Num() == BoundDelegates.Num());
+
+	for (int32 i = 0; i < ModifierDelegateHandles.Num(); ++i)
 	{
-		if (IHYModifierProvider* Provider = Cast<IHYModifierProvider>(Actor))
-		{
-			FModifyAttribute* Delegate = Provider->GetModifierDelegate();
-			Delegate->Remove(ModifierDelegateHandle);
-			return true;
-		}
+		BoundDelegates[i]->Remove(ModifierDelegateHandles[i]);
 	}
 
-	return false;
+	ModifierDelegateHandles.Empty();
+	BoundDelegates.Empty();
+
+	return true;
 }
 
 bool UHYUpgrade::InitializeUpgrade(UHYInventoryComponent* InOwner)

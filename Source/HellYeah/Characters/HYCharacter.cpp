@@ -3,6 +3,7 @@
 
 #include "Characters/HYCharacter.h"
 #include "Health/HYHealthComponent.h"
+#include "HYGameplayTags.h"
 
 // Sets default values
 AHYCharacter::AHYCharacter()
@@ -11,6 +12,53 @@ AHYCharacter::AHYCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	HealthComponent = CreateDefaultSubobject<UHYHealthComponent>(TEXT("Health Component"));
+}
+
+TArray<FModifyAttribute*> AHYCharacter::GetModifierDelegates()
+{
+	TArray<FModifyAttribute*> Delegates;
+
+	Delegates.Add(&ModifyAttribute);
+
+	if (UHYHealthComponent* Health = FindComponentByClass<UHYHealthComponent>())
+	{
+		if (IHYModifierProvider* HealthProvider = Cast<IHYModifierProvider>(Health))
+		{
+			Delegates.Append(HealthProvider->GetModifierDelegates());
+		}
+	}
+
+	return Delegates;
+}
+
+bool AHYCharacter::DealDamage(const FHitResult& Hit)
+{
+	if (!Hit.bBlockingHit)
+	{
+		return false;
+	}
+
+	if (!IsValid(Hit.GetActor()))
+	{
+		return false;
+	}
+
+	if (UHYHealthComponent* HealthComp = Hit.GetActor()->GetComponentByClass<UHYHealthComponent>())
+	{
+		float FinalDamage = BaseDamage;
+		ModifyAttribute.Broadcast(TAG_Attribute_Damage_Outcoming, FinalDamage);
+
+		FHYDamageInfo DamageInfo;
+		DamageInfo.Damage = FinalDamage;
+		DamageInfo.DamageCauser = this;
+		DamageInfo.Instigator = this;
+		DamageInfo.HitResult = Hit;
+
+		HealthComp->TryDamage(DamageInfo);
+		return true;
+	}
+	
+	return true;
 }
 
 // Called when the game starts or when spawned

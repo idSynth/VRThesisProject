@@ -53,7 +53,7 @@ public:
 	UHYHealthComponent();
 
 	FModifyAttribute ModifyAttribute;
-	virtual FModifyAttribute* GetModifierDelegate() override { return &ModifyAttribute; }
+	virtual TArray<FModifyAttribute*> GetModifierDelegates() override { return { &ModifyAttribute }; }
 
 	// Tries damaging an actor, returns the amount of damage dealt
 	UFUNCTION(BlueprintCallable)
