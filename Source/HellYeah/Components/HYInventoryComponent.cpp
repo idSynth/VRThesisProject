@@ -16,12 +16,33 @@ UHYInventoryComponent::UHYInventoryComponent()
 	// ...
 }
 
+void UHYInventoryComponent::OverrideUpgrades(const TMap<FGameplayTag, int32>& InUpgrades)
+{
+	ClearInventory();
+
+	for (const TPair<FGameplayTag, int32>& Pair : InUpgrades)
+	{
+		AddNumStacks(Pair.Key, Pair.Value);
+	}
+}
+
+void UHYInventoryComponent::ClearInventory()
+{
+	TArray<FGameplayTag> UpgradeTags;
+	Upgrades.GenerateKeyArray(UpgradeTags);
+
+	for (const FGameplayTag& UpgradeTag : UpgradeTags)
+	{
+		RemoveAllStacks(UpgradeTag);
+	}
+}
+
 void UHYInventoryComponent::AddNumStacks(const FGameplayTag& UpgradeTag, int32 NumStacks)
 {
 	const int32* CurrentStacksPtr = Upgrades.Find(UpgradeTag);
 	int32 PreviousStacks = CurrentStacksPtr ? *CurrentStacksPtr : 0;
 
-	for (int32 i = 0; i <= NumStacks; i++)
+	for (int32 i = 0; i < NumStacks; i++)
 	{
 		AddStack(UpgradeTag);
 	}
@@ -48,6 +69,7 @@ void UHYInventoryComponent::RemoveAllStacks(const FGameplayTag& UpgradeTag)
 			if (UHYUpgrade* Upgrade = *UpgradePtr)
 			{
 				Upgrade->UninitializeUpgrade(this);
+				Upgrade->ConditionalBeginDestroy();
 			}
 
 			ActiveUpgrades.Remove(UpgradeTag);
@@ -122,6 +144,7 @@ bool UHYInventoryComponent::RemoveStack(const FGameplayTag& UpgradeTag)
 			if (UHYUpgrade* Upgrade = *UpgradePtr)
 			{
 				Upgrade->UninitializeUpgrade(this);
+				Upgrade->ConditionalBeginDestroy();
 			}
 
 			ActiveUpgrades.Remove(UpgradeTag);

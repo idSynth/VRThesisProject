@@ -24,6 +24,12 @@ public:
 	FOnStackChanged OnStackChanged;
 
 	UFUNCTION(BlueprintCallable)
+	void OverrideUpgrades(const TMap<FGameplayTag, int32>& InUpgrades);
+
+	UFUNCTION(BlueprintCallable)
+	void ClearInventory();
+
+	UFUNCTION(BlueprintCallable)
 	void AddNumStacks(const FGameplayTag& UpgradeTag, int32 NumStacks);
 
 	UFUNCTION(BlueprintCallable)
