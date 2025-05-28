@@ -2,8 +2,9 @@
 
 
 #include "HYFunctionLibrary.h"
-#include "GameplayTagsManager.h"
 #include "Algo/Reverse.h"
+#include "Characters/HYEnemyBase.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 FText UHYFunctionLibrary::GetFriendlyAttributeName(const FGameplayTag& Tag)
 {
@@ -24,6 +25,64 @@ FText UHYFunctionLibrary::GetFriendlyAttributeName(const FGameplayTag& Tag)
 	return FText::FromString(FString::Join(Parts, TEXT(" ")));
 }
 
+AHYEnemyBase* UHYFunctionLibrary::SpawnEnemyFromType(const FGameplayTag& Type, const FTransform& Transform)
+{
+	if (AHYEnemyBase* Enemy = SpawnEnemyFromDescription(GetDescriptionFromEnemyType(Type), Transform))
+	{
+		Enemy->SetType(Type);
+
+		return Enemy;
+	}
+
+	return nullptr;
+}
+
+AHYEnemyBase* UHYFunctionLibrary::SpawnEnemyFromDescription(const FHYEnemyDescription& EnemyDescription, const FTransform& Transform)
+{
+	FTransform FinalTransform = Transform;
+	FinalTransform.SetScale3D(FVector(EnemyDescription.Scale));
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	AHYEnemyBase* SpawnedActor = GWorld->SpawnActor<AHYEnemyBase>(EnemyDescription.Class.LoadSynchronous(), FinalTransform, SpawnParams);
+	
+	if (!IsValid(SpawnedActor))
+	{
+		return nullptr;
+	}
+
+	SpawnedActor->SetDescription(EnemyDescription);
+
+	return SpawnedActor;
+}
+
+FHYEnemyDescription UHYFunctionLibrary::GetDescriptionFromEnemyType(const FGameplayTag& Type)
+{
+	const UHYTagData* TagData = GetDefault<UHYTagData>();
+
+	for (TSoftObjectPtr<UDataTable> DTSoft : TagData->TagsDT)
+	{
+		UDataTable* DataTable = DTSoft.LoadSynchronous();
+		if (!DataTable)
+		{
+			continue;
+		}
+
+		// Check if the row structure is of type FHYEnemyDescription
+		if (DataTable->GetRowStruct() == FHYEnemyDescription::StaticStruct())
+		{
+			if (FHYEnemyDescription* Row = DataTable->FindRow<FHYEnemyDescription>(Type.GetTagName(), TEXT("GetDescriptionFromEnemyType")))
+			{
+				return *Row;
+			}
+		}
+	}
+
+	// Return a default-initialized struct if not found
+	return FHYEnemyDescription();
+}
+
 FGameplayTagContainer UHYFunctionLibrary::FilterContainer(const FGameplayTagContainer& A, const FGameplayTagContainer& B)
 {
 	TArray<FGameplayTag> GameplayTags;
@@ -40,18 +99,6 @@ FGameplayTagContainer UHYFunctionLibrary::FilterContainer(const FGameplayTagCont
 	}
 
 	return ResultContainer;
-}
-
-FGameplayTagContainer UHYFunctionLibrary::GetGameplayTagChildren(FGameplayTag Tag)
-{
-	const UGameplayTagsManager& Manager = UGameplayTagsManager::Get();
-	return Manager.RequestGameplayTagChildren(Tag);
-}
-
-FGameplayTagContainer UHYFunctionLibrary::GetGameplayTagParents(FGameplayTag Tag)
-{
-	const UGameplayTagsManager& Manager = UGameplayTagsManager::Get();
-	return Manager.RequestGameplayTagParents(Tag);
 }
 
 FGameplayTagContainer UHYFunctionLibrary::GetGameplayTagLastChildrenOnly(FGameplayTag Tag)

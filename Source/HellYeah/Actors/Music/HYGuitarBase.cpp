@@ -20,6 +20,7 @@
 
 #include "HYGameplayTags.h"
 #include "HYFunctionLibrary.h"
+#include "Characters/HYEnemyBase.h"
 
 // Sets default values
 AHYGuitarBase::AHYGuitarBase()
@@ -153,7 +154,7 @@ void AHYGuitarBase::UpdateStrumming()
 	float StrummingVelocity = StrumMotionController->GetLinearVelocityPublic().Length();
 	float NormalizedStrummingVelocity = UKismetMathLibrary::NormalizeToRange(StrummingVelocity, 0.0f, 150.0f);
 
-	Audio->SetFloatParameter(FName("NormalizedStrummingVelocity"), FMath::Clamp(NormalizedStrummingVelocity, 0.0f, 1.0f));
+	//Audio->SetFloatParameter(FName("NormalizedStrummingVelocity"), FMath::Clamp(NormalizedStrummingVelocity, 0.0f, 1.0f));
 
 	//GEngine->AddOnScreenDebugMessage(INDEX_NONE, 10.0f, FColor::White, *FString::SanitizeFloat(StrummingVelocity));
 
@@ -167,6 +168,7 @@ void AHYGuitarBase::UpdateStrumming()
 
 		DealDamage();
 		LastDamageTime = Now;
+		OnStrumTriggered.Broadcast(LastDamageTime);
 	}
 }
 
@@ -240,7 +242,7 @@ void AHYGuitarBase::DealDamage()
 	ModifyAttribute.Broadcast(TAG_Attribute_Range, ModifiedDamageDistance);
 
 	FVector End = CameraLocation + CameraRotation.Vector() * ModifiedDamageDistance;
-	if (!UKismetSystemLibrary::SphereTraceMultiForObjects(this, Start, End, BaseAttackRadius, DamageObjectTypes, false, {}, DebugTraceType, Hits, true))
+	if (!UKismetSystemLibrary::SphereTraceMultiForObjects(this, Start, End, BaseAttackRadius, DamageObjectTypes, false, {}, EDrawDebugTrace::None, Hits, true))
 	{
 		return;
 	}
@@ -265,6 +267,19 @@ void AHYGuitarBase::DealDamage()
 				DamageInfo.HitResult = Hit;
 
 				ModifyAttribute.Broadcast(TAG_Attribute_Damage_Outcoming, DamageInfo.Damage);
+
+				// If we hit an enemy, we can stun them
+				// It's necessary that we call it from here to allow attributes to be modified
+				if (AHYEnemyBase* Enemy = Cast<AHYEnemyBase>(Hit.GetActor()))
+				{
+					float FinalMovementMultiplier = EnemyMovementSpeedMultiplier;
+					ModifyAttribute.Broadcast(TAG_Attribute_Speed_Movement, FinalMovementMultiplier);
+
+					float FinalRecoveryTimeMultiplier = EnemyRecoveryTimeMultiplier;
+					ModifyAttribute.Broadcast(TAG_Attribute_RecoveryTime, FinalRecoveryTimeMultiplier);
+
+					Enemy->Stun(FinalMovementMultiplier, FinalRecoveryTimeMultiplier);
+				}
 
 				HealthComponent->TryDamage(DamageInfo);
 			}

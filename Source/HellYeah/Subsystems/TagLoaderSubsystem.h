@@ -5,19 +5,24 @@
 #include "CoreMinimal.h"
 #include "Subsystems/EngineSubsystem.h"
 #include "HYStructs.h"
-#include "UpgradeLoaderSubsystem.generated.h"
+#include "TagLoaderSubsystem.generated.h"
 
-HELLYEAH_API DECLARE_LOG_CATEGORY_EXTERN(LogUpgradeLoader, Log, All);
+HELLYEAH_API DECLARE_LOG_CATEGORY_EXTERN(LogTagLoader, Log, All);
 
 /**
  * 
  */
 UCLASS()
-class HELLYEAH_API UUpgradeLoaderSubsystem : public UEngineSubsystem
+class HELLYEAH_API UTagLoaderSubsystem : public UEngineSubsystem
 {
 	GENERATED_BODY()
 	
 public:
 	/** Implement this for initialization of instances of the system */
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+private:
+	void RegisterAllTags();
+
+	void RegisterTagsFromDataTableRows(UDataTable* DT);
 };

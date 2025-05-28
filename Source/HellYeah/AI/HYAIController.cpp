@@ -7,10 +7,12 @@ void AHYAIController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	/*
 	if (!DefaultBehaviorTree)
 	{
 		return;
 	}
 
 	RunBehaviorTree(DefaultBehaviorTree);
+	*/
 }

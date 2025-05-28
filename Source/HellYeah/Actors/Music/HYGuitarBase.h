@@ -18,6 +18,7 @@ class UTextRenderComponent;
 class UHYMotionControllerComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNoteChanged, float, MIDINote);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStrumTriggered, float, CurrentTime);
 
 
 UCLASS()
@@ -61,6 +62,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnNoteChanged OnNoteChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnStrumTriggered OnStrumTriggered;
 
 	UFUNCTION(BlueprintCallable)
 	FName MIDINoteToName(const float& MIDINote) const;
@@ -141,6 +145,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	float StrumThreshold = 0.3f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	float EnemyMovementSpeedMultiplier = .8f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	float EnemyRecoveryTimeMultiplier = 1.0f;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	TEnumAsByte<EDrawDebugTrace::Type> DebugTraceType;
 
@@ -152,6 +162,8 @@ private:
 
 	// timestamp of the last time we dealt damage
 	float LastDamageTime = -FLT_MAX;
+
+
 
 public:	
 	// Called every frame

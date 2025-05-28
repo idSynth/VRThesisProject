@@ -4,11 +4,29 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "HYGameplayTags.h"
 #include "HYWaveManager.generated.h"
+
+UENUM(BlueprintType)
+enum class ESpawnType : uint8
+{
+	Entrance,
+	Backstage
+};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWaveStarted);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWaveEnded, bool, bWasSuccessful);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemySpawned, AHYEnemyBase*, SpawnedEnemy);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEnemySpawned, AHYEnemyBase*, SpawnedEnemy, ESpawnType, SpawnType);
+
+USTRUCT(BlueprintType)
+struct FSpawnPoints
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<TObjectPtr<AActor>> SpawnPoints;
+};
 
 class AHYEnemyBase;
 struct FHYDamageInfo;
@@ -60,13 +78,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FTimerHandle GetWaveTimer() const { return WaveTimerHandle; }
 
+	UFUNCTION(BlueprintCallable)
+	bool CanSpawnType(const FGameplayTag& Type);
+
+	UFUNCTION(BlueprintCallable)
+	TArray<AActor*> GetSpawnPoints(ESpawnType SpawnType) const { return SpawnPoints[SpawnType].SpawnPoints; }
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ExposeOnSpawn = true))
-	TArray<TObjectPtr<AActor>> SpawnPoints;
+	TMap<ESpawnType, FSpawnPoints> SpawnPoints;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
+	UFUNCTION(BlueprintCallable)
+	void ClearEnemies();
+
 	// ======= Waves ===========
 
 	UPROPERTY(BlueprintReadOnly)
@@ -91,15 +118,17 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	float SpawnCheckFrequency = 2.5f;
 
-	UPROPERTY(BlueprintReadOnly)
-	int32 EnemyLimit = 10;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float BackstageSpawnChance = 0.05;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TMap<FGameplayTag, int32> EnemyLimit = { {TAG_Enemy_Type_Entrance, 10}, {TAG_Enemy_Type_Backstage, 2} };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TMap<FGameplayTag, int32> SpawnedEnemiesCount;
 
 	UPROPERTY()
 	TSet<TObjectPtr<AHYEnemyBase>> SpawnedEnemies;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
-	TSubclassOf<AHYEnemyBase> EnemyClass;
-
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

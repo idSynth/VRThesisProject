@@ -24,10 +24,13 @@ void AHYUpgradeSelector::StartUpgradeSelection()
 	FGameplayTagContainer FilteredContainer = UHYFunctionLibrary::FilterContainer(UpgradeContainer, ExcludeTags);
 
 	TSet<FGameplayTag> RandomTags;
-
-	while (RandomTags.Num() != ItemsAmount)
+	
+	for (int32 i = 0; i < ItemsAmount; i++)
 	{
-		RandomTags.Add(FilteredContainer.GetByIndex(FMath::RandRange(0, FilteredContainer.Num() - 1)));
+		FGameplayTag Tag = UHYFunctionLibrary::GetRandomTag(FilteredContainer);
+		
+		RandomTags.Add(Tag);
+		FilteredContainer.RemoveTag(Tag);
 	}
 
 	// Row layout settings

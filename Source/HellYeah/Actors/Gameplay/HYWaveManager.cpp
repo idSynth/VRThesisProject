@@ -4,6 +4,7 @@
 #include "Actors/Gameplay/HYWaveManager.h"
 #include "Characters/HYEnemyBase.h"
 #include "Health/HYHealthComponent.h"
+#include "HYFunctionLibrary.h"
 
 // Sets default values
 AHYWaveManager::AHYWaveManager()
@@ -20,6 +21,8 @@ void AHYWaveManager::StartWave()
 		UE_LOG(LogTemp, Warning, TEXT("Tried to start wave while previous wasn't finished!"));
 		return;
 	}
+
+	ClearEnemies();
 
 	FTimerManagerTimerParameters TimerParams;
 	TimerParams.bLoop = false;
@@ -52,20 +55,12 @@ void AHYWaveManager::EndWaveWithResult(bool bWasSuccessful)
 
 	// Stop spawning new enemies
 	GetWorld()->GetTimerManager().ClearTimer(SpawnerTimerHandle);
-
-	// Kill all enemies after wave ends
-	for (AHYEnemyBase* Enemy : SpawnedEnemies)
+	
+	if (bWasSuccessful)
 	{
-		if (!IsValid(Enemy))
-		{
-			continue;
-		}
-
-		Enemy->GetHealthComponent()->OverrideHealth(0.0f);
+		ClearEnemies();
 	}
 
-	SpawnedEnemies.Empty(EnemyLimit);
-	
 	bIsWaveActive = false;
 	OnWaveEnded.Broadcast(bWasSuccessful);
 }
@@ -82,7 +77,11 @@ void AHYWaveManager::TrySpawnEnemy()
 		return;
 	}
 
-	if (SpawnedEnemies.Num() >= EnemyLimit)
+	// Determine if we should spawn an enemy backstage
+	ESpawnType NewSpawnType = FMath::RandRange(0.0f, 1.0f) > BackstageSpawnChance ? ESpawnType::Entrance : ESpawnType::Backstage;
+	FGameplayTag EnemyType = NewSpawnType == ESpawnType::Backstage ? TAG_Enemy_Type_Backstage : TAG_Enemy_Type_Entrance;
+
+	if (!CanSpawnType(EnemyType))
 	{
 		return;
 	}
@@ -93,18 +92,33 @@ void AHYWaveManager::TrySpawnEnemy()
 		return;
 	}
 
-	int32 SpawnPointIndex = FMath::RandRange(0, SpawnPoints.Num() - 1);
 
-	FTransform SpawnTransform = SpawnPoints[SpawnPointIndex]->GetActorTransform();
+	int32 SpawnPointIndex = FMath::RandRange(0, GetSpawnPoints(NewSpawnType).Num() - 1);
+	FTransform SpawnTransform = GetSpawnPoints(NewSpawnType)[SpawnPointIndex]->GetActorTransform();
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 
-	if (AHYEnemyBase* SpawnedEnemy = GetWorld()->SpawnActor<AHYEnemyBase>(EnemyClass, SpawnTransform, SpawnParams))
+	FGameplayTag RandomizedType = UHYFunctionLibrary::GetRandomTag(UHYFunctionLibrary::GetGameplayTagLastChildrenOnly(EnemyType));
+
+	FHYEnemyDescription EnemyDescription = 
+		UHYFunctionLibrary::GetDescriptionFromEnemyType(RandomizedType);
+
+	if (AHYEnemyBase* SpawnedEnemy = UHYFunctionLibrary::SpawnEnemyFromDescription(EnemyDescription, SpawnTransform))
 	{
-		SpawnedEnemy->GetHealthComponent()->OnDeath.AddDynamic(this, &AHYWaveManager::HandleDeadEnemy);
+		SpawnedEnemy->SetType(EnemyType);
+
+		SpawnedEnemy->GetHealthComponent()->OnDeath.AddDynamic(this, &AHYWaveManager::HandleDeadEnemy);	
 		SpawnedEnemies.Add(SpawnedEnemy);
-		OnEnemySpawned.Broadcast(SpawnedEnemy);
+
+		if (!SpawnedEnemiesCount.Contains(EnemyType))
+		{
+			SpawnedEnemiesCount.Add(EnemyType, 0);
+		}
+
+		SpawnedEnemiesCount[EnemyType] += 1;
+
+		OnEnemySpawned.Broadcast(SpawnedEnemy, NewSpawnType);
 	}
 	else
 	{
@@ -135,7 +149,13 @@ void AHYWaveManager::HandleDeadEnemy(FHYDamageInfo LethalDamageInfo)
 	else
 	{
 		SpawnedEnemies.Remove(DeadEnemy);
+		SpawnedEnemiesCount[DeadEnemy->GetType()] -= 1;
 	}
+}
+
+bool AHYWaveManager::CanSpawnType(const FGameplayTag& Type)
+{
+	return SpawnedEnemiesCount.Contains(Type) ? (SpawnedEnemiesCount[Type] < EnemyLimit[Type]) : true;
 }
 
 // Called when the game starts or when spawned
@@ -143,6 +163,23 @@ void AHYWaveManager::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void AHYWaveManager::ClearEnemies()
+{
+	// Kill all enemies after wave ends
+	for (AHYEnemyBase* Enemy : SpawnedEnemies)
+	{
+		if (!IsValid(Enemy))
+		{
+			continue;
+		}
+
+		Enemy->GetHealthComponent()->OverrideHealth(0.0f);
+	}
+
+	SpawnedEnemiesCount.Empty();
+	SpawnedEnemies.Empty();
 }
 
 // Called every frame
