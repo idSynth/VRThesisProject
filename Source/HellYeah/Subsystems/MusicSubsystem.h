@@ -12,6 +12,7 @@ class UQuartzSubsystem;
 class UQuartzClockHandle;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMusicSettingsChanged, UDAMusicDescription*, NewMusicDescription);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMusicStoppedDelegate);
 
 UCLASS(Config = Game, defaultconfig, meta = (DisplayName = "HY Project Settings"))
 class HELLYEAH_API UHYMusicData : public UDeveloperSettings
@@ -38,6 +39,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Music")
 	void LoadMusicFromDescription(UDAMusicDescription* InMusicDescription);
 
+	/** Pause the currently playing music by fading out over FadeDuration seconds. */
+	UFUNCTION(BlueprintCallable, Category = "Music")
+	void StopMusic(float FadeDuration = 1.0f);
+
 	UFUNCTION(BlueprintCallable, Category = "Music")
 	UDAMusicDescription* GetMusicDescription() const { return MusicDescription; }
 
@@ -47,9 +52,15 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Music")
 	FOnQuartzCommandEvent OnMusicStartedDelegate;
 
+	UPROPERTY(BlueprintAssignable, Category = "Music")
+	FOnMusicStoppedDelegate OnMusicStoppedDelegate;
+
 private:
 	UFUNCTION()
 	void OnMusicStarted(EQuartzCommandDelegateSubType EventType, FName Name);
+
+	UFUNCTION()
+	void OnMusicStopped();
 
 	UPROPERTY()
 	TObjectPtr<UDAMusicDescription> MusicDescription;

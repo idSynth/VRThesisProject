@@ -44,10 +44,10 @@ public:
 	TSoftClassPtr<UHYUpgrade> UpgradeClass = TSoftClassPtr<UHYUpgrade>(FSoftClassPath(TEXT("/Script/HellYeah.HYUpgrade")));
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Logic)
-	EListenActor ListenTarget;
+	EListenActor ListenTarget = EListenActor::Character;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Logic)
-	EModifierType ModifierType;
+	EModifierType ModifierType = EModifierType::Increase;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Logic, meta = (Categories = "Attribute"))
 	FGameplayTag AttributeTag;

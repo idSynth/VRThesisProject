@@ -49,6 +49,8 @@ void UMusicSubsystem::LoadMusicFromDescription(UDAMusicDescription* InMusicDescr
 
 		SoundActor->GetAudioComponent()->SetSound(
 			MusicSettings->BackgroundMusic.LoadSynchronous());
+
+		SoundActor->GetAudioComponent()->OnAudioFinished.AddDynamic(this, &UMusicSubsystem::OnMusicStopped);
 	}
 
 	ensure(IsValid(SoundActor) && IsValid(Clock));
@@ -74,7 +76,28 @@ void UMusicSubsystem::LoadMusicFromDescription(UDAMusicDescription* InMusicDescr
 	OnMusicSettingsChanged.Broadcast(InMusicDescription);
 }
 
+void UMusicSubsystem::StopMusic(float FadeDuration)
+{
+	if (!IsValid(GetWorld()) || !IsValid(SoundActor))
+	{
+		return;
+	}
+
+	UAudioComponent* AudioComp = SoundActor->GetAudioComponent();
+	if (!AudioComp || !AudioComp->IsPlaying())
+	{
+		return;
+	}
+
+	AudioComp->FadeOut(FadeDuration, 0.0f);
+}
+
 void UMusicSubsystem::OnMusicStarted(EQuartzCommandDelegateSubType EventType, FName Name)
 {
 	OnMusicStartedDelegate.Broadcast(EventType, Name);
+}
+
+void UMusicSubsystem::OnMusicStopped()
+{
+	OnMusicStoppedDelegate.Broadcast();
 }

@@ -16,7 +16,9 @@ struct FHYDamageInfo
 	GENERATED_BODY()
 	
 public:
-	FHYDamageInfo()
+	FHYDamageInfo() 
+		: Instigator(nullptr)
+		, DamageCauser(nullptr)
 	{
 	}
 
